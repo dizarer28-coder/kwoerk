@@ -439,7 +439,7 @@ if __name__ == '__main__':
             users_data = [
                 {'username': 'alice', 'email': 'alice@test.com', 'password': '123456', 'bio': 'Дизайнер, люблю рисовать'},
                 {'username': 'bob', 'email': 'bob@test.com', 'password': '123456', 'bio': 'Разработчик игр'},
-                {'username': 'charlie', 'email': 'charlie@test.com', 'password': '123456', 'bio': 'Музыкант'},
+                {'username': 'charlie', 'email': 'charlie@test.com', 'password': '123456', 'bio': 'Музыкант'}
             ]
             
             for user_data in users_data:
