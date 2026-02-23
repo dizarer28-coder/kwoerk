@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Clone - Мессенджер</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b141a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: rgba(31, 44, 52, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #00a884;
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00a884;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-outline {
+            border: 2px solid #00a884;
+            color: #00a884;
+        }
+
+        .btn-outline:hover {
+            background: #00a884;
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: #00a884;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #008f72;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 100px 50px 50px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0b141a 0%, #1f2c34 100%);
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00a884 0%, #fff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            color: #8696a0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .features {
+            padding: 80px 50px;
+            background: #1f2c34;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: #fff;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #2a3942;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-card i {
+            font-size: 48px;
+            color: #00a884;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .feature-card p {
+            color: #8696a0;
+            line-height: 1.6;
+        }
+
+        .cta {
+            text-align: center;
+            padding: 80px 50px;
+            background: linear-gradient(135deg, #00a884 0%, #008f72 100%);
+        }
+
+        .cta h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta .btn-primary {
+            background: #fff;
+            color: #00a884;
+            font-size: 18px;
+            padding: 15px 40px;
+        }
+
+        .cta .btn-primary:hover {
+            background: #f0f0f0;
+        }
+
+        .footer {
+            background: #0b141a;
+            padding: 50px;
+            text-align: center;
+            color: #8696a0;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #8696a0;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #00a884;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 120px;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing">
+        <nav class="nav">
+            <div class="logo">
+                <i class="fab fa-telegram-plane"></i>
+                <span>Telegram Clone</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Возможности</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Войти</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Регистрация</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Быстрый и безопасный мессенджер</h1>
+                <p>Общайтесь с друзьями, создавайте каналы, делитесь фотографиями. Всё бесплатно.</p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Начать общение</a>
+                    <a href="#features" class="btn btn-outline">Узнать больше</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-comment-dots" style="font-size: 200px; color: #00a884;"></i>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2 class="section-title">Почему выбирают нас</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Мгновенные сообщения</h3>
+                    <p>Сообщения доставляются за доли секунды</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lock"></i>
+                    <h3>Безопасность</h3>
+                    <p>Ваши данные защищены</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-users"></i>
+                    <h3>Каналы</h3>
+                    <p>Создавайте свои каналы</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Свои аватарки</h3>
+                    <p>Загружайте любые фото</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <h2>Готовы начать?</h2>
+            <p>Присоединяйтесь к нам</p>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Создать аккаунт</a>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2024 Telegram Clone. Все права защищены.</p>
+        </footer>
+    </div>
+</body>
+</html>

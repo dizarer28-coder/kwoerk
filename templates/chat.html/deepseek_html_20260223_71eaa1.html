@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Чат с {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="chat-header">
+    <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
+         alt="{{ user.username }}" 
+         class="chat-header-avatar"
+         onclick="window.location.href='/profile/{{ user.username }}'">
+    <div class="chat-header-info">
+        <div class="chat-header-name">{{ user.username }}</div>
+        <div class="chat-header-status" id="chatStatus">
+            {% if user.online %}
+            <span class="online-indicator" style="display: inline-block; margin-right: 5px;"></span>в сети
+            {% else %}
+            был(а) {{ user.last_seen.strftime('%H:%M') }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="chat-header-actions">
+        <i class="fas fa-phone-alt"></i>
+        <i class="fas fa-video"></i>
+        <i class="fas fa-ellipsis-v"></i>
+    </div>
+</div>
+
+<div class="messages-container" id="messagesContainer">
+    {% for msg in messages %}
+    <div class="message {% if msg.sender_id == current_user.id %}outgoing{% else %}incoming{% endif %}">
+        <div class="message-bubble">
+            {{ msg.content }}
+            <div class="message-time">
+                {{ msg.timestamp.strftime('%H:%M') }}
+                {% if msg.sender_id == current_user.id %}
+                <span class="message-status">
+                    {% if msg.read %}✓✓{% else %}✓{% endif %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="message-input-area">
+    <i class="fas fa-paperclip" style="color: #8696a0; font-size: 22px; cursor: pointer;"></i>
+    <i class="fas fa-smile" style="color: #8696a0; font-size: 22px; cursor: pointer;"></i>
+    <input type="text" placeholder="Сообщение" id="messageInput" onkeypress="handleKeyPress(event)">
+    <button class="send-btn" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+</div>
+
+<script>
+    const receiverId = {{ user.id }};
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageInput = document.getElementById('messageInput');
+    let typingTimer;
+    let isTyping = false;
+    
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.emit('send_message', {
+                receiver_id: receiverId,
+                content: message
+            });
+            messageInput.value = '';
+        }
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+        
+        if (!isTyping) {
+            isTyping = true;
+            socket.emit('typing', {
+                receiver_id: receiverId,
+                is_typing: true
+            });
+        }
+        
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            isTyping = false;
+            socket.emit('typing', {
+                receiver_id: receiverId,
+                is_typing: false
+            });
+        }, 1000);
+    }
+
+    socket.on('new_message', function(data) {
+        if (data.sender_id === receiverId) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message incoming';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${data.content}
+                    <div class="message-time">${data.timestamp}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    });
+
+    socket.on('message_sent', function(data) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message outgoing';
+        messageDiv.innerHTML = `
+            <div class="message-bubble">
+                ${data.content}
+                <div class="message-time">
+                    ${data.timestamp}
+                    <span class="message-status">✓</span>
+                </div>
+            </div>
+        `;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    socket.on('user_typing', function(data) {
+        if (data.user_id === receiverId) {
+            if (data.is_typing) {
+                document.getElementById('chatStatus').innerHTML = 'печатает...';
+            } else {
+                document.getElementById('chatStatus').innerHTML = 'в сети';
+            }
+        }
+    });
+</script>
+{% endblock %}

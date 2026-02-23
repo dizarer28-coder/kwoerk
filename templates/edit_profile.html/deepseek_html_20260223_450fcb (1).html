@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; width: 100%; padding: 20px;">
+    <div class="chat-header" style="border-radius: 15px; margin-bottom: 20px;">
+        <i class="fas fa-arrow-left" style="font-size: 24px; cursor: pointer;" onclick="window.history.back()"></i>
+        <h3 style="margin-left: 20px;">Редактировать профиль</h3>
+    </div>
+
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px;">
+        <form method="POST" enctype="multipart/form-data">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="position: relative; display: inline-block;">
+                    <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" 
+                         alt="Avatar" 
+                         id="avatarPreview"
+                         style="width: 150px; height: 150px; border-radius: 50%; border: 4px solid #00a884; cursor: pointer;"
+                         onclick="document.getElementById('avatarInput').click()">
+                    <div style="position: absolute; bottom: 10px; right: 10px; background: #00a884; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                         onclick="document.getElementById('avatarInput').click()">
+                        <i class="fas fa-camera" style="color: #fff;"></i>
+                    </div>
+                </div>
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                <p style="color: #8696a0; margin-top: 10px;">Нажмите на аватарку чтобы изменить</p>
+            </div>
+
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" name="username" value="{{ current_user.username }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>О себе</label>
+                <textarea name="bio">{{ current_user.bio }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" name="phone" value="{{ current_user.phone }}">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}{{ channel.name }}{% endblock %}
+
+{% block content %}
+<div class="chat-header">
+    <img src="{{ url_for('static', filename='uploads/channels/' + channel.avatar) }}" 
+         alt="{{ channel.name }}" 
+         class="chat-header-avatar">
+    <div class="chat-header-info">
+        <div class="chat-header-name">{{ channel.name }}</div>
+        <div class="chat-header-status">
+            <i class="fas fa-users"></i> {{ subscribers }} подписчиков
+        </div>
+    </div>
+    <div class="chat-header-actions">
+        {% if is_subscribed %}
+        <button class="btn btn-outline" onclick="unsubscribeChannel()">
+            <i class="fas fa-bell-slash"></i> Отписаться
+        </button>
+        {% else %}
+        <button class="btn btn-primary" onclick="subscribeChannel()">
+            <i class="fas fa-bell"></i> Подписаться
+        </button>
+        {% endif %}
+        <i class="fas fa-share" onclick="shareChannel()"></i>
+    </div>
+</div>
+
+<div class="messages-container" id="messagesContainer">
+    {% if channel.description %}
+    <div style="background: #1f2c34; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+        <h4 style="color: #8696a0; margin-bottom: 10px;">О канале</h4>
+        <p>{{ channel.description }}</p>
+        <p style="color: #8696a0; font-size: 12px; margin-top: 10px;">
+            Создан {{ channel.created_at.strftime('%d.%m.%Y') }}
+        </p>
+    </div>
+    {% endif %}
+
+    {% for msg in messages %}
+    <div class="message incoming">
+        <div class="message-bubble">
+            <small style="color: #00a884;">{{ msg.sender.username }}</small><br>
+            {{ msg.content }}
+            <div class="message-time">
+                {{ msg.timestamp.strftime('%H:%M') }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if is_subscribed %}
+<div class="message-input-area">
+    <input type="text" placeholder="Сообщение в канал" id="messageInput" onkeypress="handleKeyPress(event)">
+    <button class="send-btn" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+</div>
+{% endif %}
+
+<script>
+    const channelId = {{ channel.id }};
+    const messagesContainer = document.getElementById('messagesContainer');
+
+    socket.emit('join_channel', { channel_id: channelId });
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.emit('send_channel_message', {
+                channel_id: channelId,
+                content: message
+            });
+            messageInput.value = '';
+        }
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    socket.on('new_channel_message', function(data) {
+        if (data.channel_id === channelId) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message incoming';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <small style="color: #00a884;">${data.sender_username}</small><br>
+                    ${data.content}
+                    <div class="message-time">${data.timestamp}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    });
+
+    function subscribeChannel() {
+        fetch(`/subscribe_channel/${channelId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+            showNotification(data.message, 'info');
+        });
+    }
+
+    function unsubscribeChannel() {
+        showNotification('Отписка скоро будет доступна', 'info');
+    }
+
+    function shareChannel() {
+        const dummy = document.createElement('input');
+        dummy.value = window.location.href;
+        document.body.appendChild(dummy);
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        showNotification('Ссылка скопирована', 'success');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}" style="color: #00a884;"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}
