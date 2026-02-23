@@ -4,5 +4,5 @@ Flask-SQLAlchemy==3.0.5
 Flask-Login==0.6.2
 Werkzeug==2.3.7
 gunicorn==21.2.0
-eventlet==0.33.3
+eventlet==0.36.1
 python-socketio==5.9.0
