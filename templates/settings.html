@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h1 style="margin-bottom: 30px;">⚙️ Настройки</h1>
+    
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+        <h2 style="margin-bottom: 20px;">Профиль</h2>
+        <div style="display: grid; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" 
+                     style="width: 80px; height: 80px; border-radius: 50%;">
+                <button onclick="window.location.href='{{ url_for('edit_profile') }}'"
+                        style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                    <i class="fas fa-edit"></i> Редактировать профиль
+                </button>
+            </div>
+            <p><strong>Username:</strong> {{ current_user.username }}</p>
+            <p><strong>Телефон:</strong> {{ current_user.phone }}</p>
+            <p><strong>Email:</strong> {{ current_user.email or 'Не указан' }}</p>
+            <p><strong>⭐ Звезд:</strong> {{ current_user.stars }}</p>
+        </div>
+    </div>
+    
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+        <h2 style="margin-bottom: 20px;">Обои чата</h2>
+        <form method="POST" action="{{ url_for('change_wallpaper') }}" enctype="multipart/form-data">
+            <input type="file" name="wallpaper" accept="image/*" required style="margin-bottom: 15px;">
+            <button type="submit" style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                Загрузить обои
+            </button>
+        </form>
+    </div>
+    
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+        <h2 style="margin-bottom: 20px;">Каналы</h2>
+        <button onclick="window.location.href='{{ url_for('create_channel') }}'"
+                style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+            <i class="fas fa-plus-circle"></i> Создать канал
+        </button>
+    </div>
+    
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px;">
+        <h2 style="margin-bottom: 20px;">Подарки</h2>
+        <button onclick="window.location.href='{{ url_for('gifts') }}'"
+                style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+            <i class="fas fa-gift"></i> Магазин подарков
+        </button>
+    </div>
+</div>
+{% endblock %}

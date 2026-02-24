@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Магазин подарков{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <!-- Шапка -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>🎁 Магазин подарков</h1>
+        <div style="background: #00a884; padding: 10px 20px; border-radius: 20px;">
+            ⭐ {{ stars }} звезд
+        </div>
+    </div>
+    
+    <!-- Мои подарки -->
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px; margin-bottom: 30px;">
+        <h2 style="margin-bottom: 20px;">Мои подарки</h2>
+        {% if user_gifts %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            {% for gift in user_gifts %}
+            <div style="background: #2a3942; border-radius: 10px; padding: 15px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 10px;">{{ gift.gift.emoji }}</div>
+                <h3 style="margin-bottom: 5px;">{{ gift.gift.name }}</h3>
+                <p style="color: #8696a0; font-size: 12px;">от {{ gift.sender.username }}</p>
+                <form method="POST" action="{{ url_for('hide_gift', gift_id=gift.id) }}" style="margin-top: 10px;">
+                    <button type="submit" style="padding: 5px 10px; background: #ff4757; border: none; border-radius: 5px; color: #fff; cursor: pointer; font-size: 12px;">
+                        {% if gift.is_hidden %}Показать{% else %}Скрыть{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: #8696a0; text-align: center;">У вас пока нет подарков</p>
+        {% endif %}
+    </div>
+    
+    <!-- Магазин подарков -->
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px;">
+        <h2 style="margin-bottom: 20px;">Доступные подарки</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            {% for gift in all_gifts %}
+            <div style="background: #2a3942; border-radius: 10px; padding: 20px; text-align: center;">
+                <div style="font-size: 64px; margin-bottom: 15px;">{{ gift.emoji }}</div>
+                <h3 style="margin-bottom: 5px;">{{ gift.name }}</h3>
+                <p style="color: #00a884; margin-bottom: 15px;">⭐ {{ gift.price }}</p>
+                <form method="POST" action="{{ url_for('buy_gift', gift_id=gift.id) }}">
+                    <button type="submit" style="width: 100%; padding: 10px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                        Купить
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

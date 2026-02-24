@@ -1,11 +1,117 @@
 {% extends "base.html" %}
+
 {% block title %}Чаты{% endblock %}
+
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h1 style="color: #00a884;">Мои чаты</h1>
-    <a href="{{ url_for('logout') }}" style="padding: 10px 20px; background: #ff4757; color: #fff; text-decoration: none; border-radius: 8px;">Выйти</a>
-</div>
-<div style="background: #1f2c34; padding: 30px; border-radius: 15px; text-align: center;">
-    <p style="color: #8696a0;">У вас пока нет чатов. Начните общение с кем-нибудь!</p>
+<div style="display: flex; height: 100vh; background: #0b141a;">
+    <!-- Левая панель с чатами -->
+    <div style="width: 400px; background: #1f2c34; border-right: 1px solid #2f3b43; display: flex; flex-direction: column;">
+        <!-- Шапка с профилем и поиском -->
+        <div style="padding: 15px; background: #202e36; display: flex; align-items: center; gap: 15px;">
+            <img src="{{ url_for('static', filename='uploads/avatars/' + current_user.avatar) }}" 
+                 style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 2px solid #00a884;"
+                 onclick="window.location.href='{{ url_for('profile', username=current_user.username) }}'">
+            <div style="flex: 1;">
+                <div style="font-weight: bold;">{{ current_user.username }}</div>
+                <div style="font-size: 12px; color: #8696a0;">⭐ {{ current_user.stars }} звезд</div>
+            </div>
+            <i class="fas fa-cog" style="font-size: 22px; color: #8696a0; cursor: pointer;" 
+               onclick="window.location.href='{{ url_for('settings') }}'"></i>
+        </div>
+        
+        <!-- Поиск -->
+        <div style="padding: 10px 15px;">
+            <form method="GET" action="{{ url_for('chats') }}">
+                <input type="text" name="q" placeholder="Поиск по username..." 
+                       value="{{ query or '' }}"
+                       style="width: 100%; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
+            </form>
+        </div>
+        
+        <!-- Результаты поиска -->
+        {% if found_users %}
+        <div style="padding: 10px 15px; border-bottom: 1px solid #2f3b43;">
+            <h4 style="color: #8696a0; margin-bottom: 10px;">Результаты поиска:</h4>
+            {% for user in found_users %}
+            <div style="display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 8px;"
+                 onmouseover="this.style.background='#2d3d47'"
+                 onmouseout="this.style.background='transparent'"
+                 onclick="window.location.href='{{ url_for('profile', username=user.username) }}'">
+                <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
+                     style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
+                <div style="flex: 1;">
+                    <div style="font-weight: bold;">{{ user.username }}</div>
+                    <div style="font-size: 12px; color: #8696a0;">⭐ {{ user.stars }} звезд</div>
+                </div>
+                <i class="fas fa-comment" style="color: #00a884;" 
+                   onclick="event.stopPropagation(); window.location.href='{{ url_for('chat', user_id=user.id) }}'"></i>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Список чатов -->
+        <div style="flex: 1; overflow-y: auto; padding: 10px 0;">
+            {% if chats %}
+                {% for chat in chats %}
+                <div style="display: flex; align-items: center; padding: 15px; cursor: pointer; border-bottom: 1px solid #2f3b43;"
+                     onmouseover="this.style.background='#2d3d47'"
+                     onmouseout="this.style.background='transparent'"
+                     onclick="window.location.href='{{ url_for('chat', user_id=chat.user.id) }}'">
+                    <img src="{{ url_for('static', filename='uploads/avatars/' + chat.user.avatar) }}" 
+                         style="width: 50px; height: 50px; border-radius: 50%; margin-right: 12px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: bold;">{{ chat.user.username }}</span>
+                            {% if chat.last_message %}
+                            <span style="font-size: 11px; color: #8696a0;">
+                                {{ chat.last_message.timestamp.strftime('%H:%M') }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 13px; color: #8696a0;">
+                                {% if chat.last_message %}
+                                    {% if chat.last_message.sender_id == current_user.id %}Вы: {% endif %}
+                                    {{ chat.last_message.content[:30] }}
+                                {% else %}
+                                    Нет сообщений
+                                {% endif %}
+                            </span>
+                            {% if chat.unread_count > 0 %}
+                            <span style="background: #00a884; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 12px;">
+                                {{ chat.unread_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #8696a0;">
+                    <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h3>У вас пока нет чатов</h3>
+                    <p>Найдите пользователя через поиск и начните общение</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Кнопка создания канала -->
+        <div style="padding: 15px; border-top: 1px solid #2f3b43;">
+            <button onclick="window.location.href='{{ url_for('create_channel') }}'"
+                    style="width: 100%; padding: 12px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                <i class="fas fa-plus-circle"></i> Создать канал
+            </button>
+        </div>
+    </div>
+    
+    <!-- Правая панель (пустая, если чат не выбран) -->
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; background-image: url('{{ url_for('static', filename='uploads/wallpapers/' + current_user.wallpaper) }}'); background-size: cover;">
+        <div style="text-align: center; color: #8696a0; background: rgba(0,0,0,0.5); padding: 30px; border-radius: 15px;">
+            <i class="fas fa-comment-dots" style="font-size: 64px; margin-bottom: 20px;"></i>
+            <h2>Выберите чат</h2>
+            <p>Начните общение с кем-нибудь из списка слева</p>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -3,137 +3,98 @@
 {% block title %}Чат с {{ user.username }}{% endblock %}
 
 {% block content %}
-<div class="chat-header">
-    <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
-         alt="{{ user.username }}" 
-         class="chat-header-avatar"
-         onclick="window.location.href='/profile/{{ user.username }}'">
-    <div class="chat-header-info">
-        <div class="chat-header-name">{{ user.username }}</div>
-        <div class="chat-header-status" id="chatStatus">
-            {% if user.online %}
-            <span class="online-indicator" style="display: inline-block; margin-right: 5px;"></span>в сети
-            {% else %}
-            был(а) {{ user.last_seen.strftime('%H:%M') }}
-            {% endif %}
+<div style="display: flex; height: 100vh; background: #0b141a;">
+    <!-- Левая панель с чатами (мини версия) -->
+    <div style="width: 300px; background: #1f2c34; border-right: 1px solid #2f3b43; overflow-y: auto;">
+        <div style="padding: 15px;">
+            <i class="fas fa-arrow-left" style="font-size: 24px; color: #8696a0; cursor: pointer; margin-bottom: 20px;" 
+               onclick="window.location.href='{{ url_for('chats') }}'"></i>
+            <h4 style="color: #8696a0; margin-bottom: 15px;">Чаты</h4>
         </div>
+        <!-- Здесь можно добавить список последних чатов -->
     </div>
-    <div class="chat-header-actions">
-        <i class="fas fa-phone-alt"></i>
-        <i class="fas fa-video"></i>
-        <i class="fas fa-ellipsis-v"></i>
-    </div>
-</div>
-
-<div class="messages-container" id="messagesContainer">
-    {% for msg in messages %}
-    <div class="message {% if msg.sender_id == current_user.id %}outgoing{% else %}incoming{% endif %}">
-        <div class="message-bubble">
-            {{ msg.content }}
-            <div class="message-time">
-                {{ msg.timestamp.strftime('%H:%M') }}
-                {% if msg.sender_id == current_user.id %}
-                <span class="message-status">
-                    {% if msg.read %}✓✓{% else %}✓{% endif %}
-                </span>
-                {% endif %}
+    
+    <!-- Правая панель с сообщениями -->
+    <div style="flex: 1; display: flex; flex-direction: column; background-image: url('{{ url_for('static', filename='uploads/wallpapers/' + current_user.wallpaper) }}'); background-size: cover;">
+        <!-- Шапка чата -->
+        <div style="padding: 15px 25px; background: #1f2c34; display: flex; align-items: center; border-bottom: 1px solid #2f3b43;">
+            <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
+                 style="width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; cursor: pointer;"
+                 onclick="window.location.href='{{ url_for('profile', username=user.username) }}'">
+            <div style="flex: 1;">
+                <div style="font-weight: bold; font-size: 18px;">{{ user.username }}</div>
+                <div style="font-size: 13px; color: #8696a0;" id="userStatus">
+                    {% if user.online %}в сети{% else %}был(а) недавно{% endif %}
+                </div>
+            </div>
+            <div style="display: flex; gap: 20px;">
+                <i class="fas fa-phone-alt" style="font-size: 22px; color: #8696a0; cursor: pointer;"></i>
+                <i class="fas fa-video" style="font-size: 22px; color: #8696a0; cursor: pointer;"></i>
+                <i class="fas fa-gift" style="font-size: 22px; color: #8696a0; cursor: pointer;" 
+                   onclick="showGiftMenu()"></i>
+                <i class="fas fa-ellipsis-v" style="font-size: 22px; color: #8696a0; cursor: pointer;"></i>
             </div>
         </div>
+        
+        <!-- Сообщения -->
+        <div style="flex: 1; overflow-y: auto; padding: 25px;" id="messagesContainer">
+            {% for msg in messages %}
+            <div style="display: flex; {% if msg.sender_id == current_user.id %}justify-content: flex-end;{% endif %} margin-bottom: 15px;">
+                <div style="max-width: 65%; {% if msg.sender_id == current_user.id %}background: #005c4b;{% else %}background: #1f2c34;{% endif %} padding: 10px 15px; border-radius: 18px; {% if msg.sender_id == current_user.id %}border-bottom-right-radius: 5px;{% else %}border-bottom-left-radius: 5px;{% endif %}">
+                    {% if msg.reply_to %}
+                    <div style="font-size: 12px; color: #8696a0; margin-bottom: 5px; padding: 5px; border-left: 2px solid #00a884;">
+                        Ответ на сообщение
+                    </div>
+                    {% endif %}
+                    <div>{{ msg.content }}</div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; margin-top: 5px;">
+                        {{ msg.timestamp.strftime('%H:%M') }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Поле ввода -->
+        <div style="padding: 20px 25px; background: #1f2c34; display: flex; gap: 15px; align-items: center;">
+            <i class="fas fa-paperclip" style="font-size: 22px; color: #8696a0; cursor: pointer;"></i>
+            <i class="fas fa-smile" style="font-size: 22px; color: #8696a0; cursor: pointer;"></i>
+            <form method="POST" action="{{ url_for('send_message', receiver_id=user.id) }}" style="flex: 1; display: flex;">
+                <input type="text" name="content" placeholder="Сообщение" 
+                       style="flex: 1; padding: 15px; background: #2a3942; border: none; border-radius: 25px; color: #fff; margin-right: 10px;">
+                <button type="submit" style="width: 50px; height: 50px; border-radius: 50%; background: #00a884; border: none; color: #fff; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
     </div>
-    {% endfor %}
 </div>
 
-<div class="message-input-area">
-    <i class="fas fa-paperclip" style="color: #8696a0; font-size: 22px; cursor: pointer;"></i>
-    <i class="fas fa-smile" style="color: #8696a0; font-size: 22px; cursor: pointer;"></i>
-    <input type="text" placeholder="Сообщение" id="messageInput" onkeypress="handleKeyPress(event)">
-    <button class="send-btn" onclick="sendMessage()">
-        <i class="fas fa-paper-plane"></i>
-    </button>
+<!-- Модальное окно с подарками -->
+<div id="giftModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1f2c34; border-radius: 15px; width: 500px; max-width: 90%; padding: 25px;">
+        <h2 style="margin-bottom: 20px;">Выберите подарок для {{ user.username }}</h2>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <!-- Здесь будут подарки -->
+        </div>
+        <button onclick="document.getElementById('giftModal').style.display='none'"
+                style="margin-top: 20px; padding: 10px; background: #ff4757; border: none; border-radius: 8px; color: #fff; width: 100%;">
+            Закрыть
+        </button>
+    </div>
 </div>
 
 <script>
-    const receiverId = {{ user.id }};
-    const messagesContainer = document.getElementById('messagesContainer');
-    const messageInput = document.getElementById('messageInput');
-    let typingTimer;
-    let isTyping = false;
+    const socket = io();
     
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-    function sendMessage() {
-        const message = messageInput.value.trim();
-        if (message) {
-            socket.emit('send_message', {
-                receiver_id: receiverId,
-                content: message
-            });
-            messageInput.value = '';
-        }
-    }
-
-    function handleKeyPress(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-        
-        if (!isTyping) {
-            isTyping = true;
-            socket.emit('typing', {
-                receiver_id: receiverId,
-                is_typing: true
-            });
-        }
-        
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
-            isTyping = false;
-            socket.emit('typing', {
-                receiver_id: receiverId,
-                is_typing: false
-            });
-        }, 1000);
-    }
-
     socket.on('new_message', function(data) {
-        if (data.sender_id === receiverId) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message incoming';
-            messageDiv.innerHTML = `
-                <div class="message-bubble">
-                    ${data.content}
-                    <div class="message-time">${data.timestamp}</div>
-                </div>
-            `;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        if (data.sender_id === {{ user.id }}) {
+            location.reload();
         }
     });
-
-    socket.on('message_sent', function(data) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message outgoing';
-        messageDiv.innerHTML = `
-            <div class="message-bubble">
-                ${data.content}
-                <div class="message-time">
-                    ${data.timestamp}
-                    <span class="message-status">✓</span>
-                </div>
-            </div>
-        `;
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    });
-
-    socket.on('user_typing', function(data) {
-        if (data.user_id === receiverId) {
-            if (data.is_typing) {
-                document.getElementById('chatStatus').innerHTML = 'печатает...';
-            } else {
-                document.getElementById('chatStatus').innerHTML = 'в сети';
-            }
-        }
-    });
+    
+    function showGiftMenu() {
+        document.getElementById('giftModal').style.display = 'flex';
+    }
 </script>
 {% endblock %}

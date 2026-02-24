@@ -3,51 +3,67 @@
 {% block title %}Профиль {{ user.username }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto; width: 100%; padding: 20px;">
-    <div class="chat-header" style="border-radius: 15px; margin-bottom: 20px;">
-        <i class="fas fa-arrow-left" style="font-size: 24px; cursor: pointer;" onclick="window.history.back()"></i>
-        <h3 style="margin-left: 20px;">Профиль</h3>
-    </div>
-
-    <div style="background: #1f2c34; border-radius: 15px; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="position: relative; display: inline-block;">
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <!-- Шапка профиля -->
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 30px;">
+            <div style="position: relative;">
                 <img src="{{ url_for('static', filename='uploads/avatars/' + user.avatar) }}" 
-                     alt="{{ user.username }}" 
                      style="width: 150px; height: 150px; border-radius: 50%; border: 4px solid #00a884;">
                 {% if user.online %}
                 <span style="position: absolute; bottom: 10px; right: 10px; width: 20px; height: 20px; background: #00a884; border-radius: 50%; border: 3px solid #1f2c34;"></span>
                 {% endif %}
             </div>
-            <h2 style="margin-top: 20px;">{{ user.username }}</h2>
-            <p style="color: #8696a0;">
-                {% if user.online %}в сети{% else %}был(а) {{ user.last_seen.strftime('%d.%m.%Y %H:%M') }}{% endif %}
-            </p>
-        </div>
-
-        <div style="margin-bottom: 30px;">
-            <h4 style="color: #8696a0; margin-bottom: 10px;">О себе</h4>
-            <p style="background: #2a3942; padding: 15px; border-radius: 10px;">
-                {{ user.bio or 'Пользователь ничего не написал о себе' }}
-            </p>
-        </div>
-
-        <div style="margin-bottom: 30px;">
-            <h4 style="color: #8696a0; margin-bottom: 10px;">Контактная информация</h4>
-            <div style="background: #2a3942; padding: 15px; border-radius: 10px;">
-                <p><i class="fas fa-phone" style="color: #00a884; width: 30px;"></i> {{ user.phone or 'Не указан' }}</p>
-                <p><i class="fas fa-envelope" style="color: #00a884; width: 30px;"></i> {{ user.email }}</p>
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                    <h1 style="font-size: 32px;">{{ user.username }}</h1>
+                    <span style="background: #00a884; padding: 5px 15px; border-radius: 20px;">⭐ {{ user.stars }}</span>
+                </div>
+                <p style="color: #8696a0; margin-bottom: 15px;">{{ user.bio or 'Нет информации о себе' }}</p>
+                <div style="display: flex; gap: 15px;">
+                    <div><i class="fas fa-phone"></i> {{ user.phone or 'Не указан' }}</div>
+                    <div><i class="fas fa-envelope"></i> {{ user.email or 'Не указан' }}</div>
+                </div>
+            </div>
+            <div>
+                {% if current_user.id == user.id %}
+                <button onclick="window.location.href='{{ url_for('edit_profile') }}'"
+                        style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                    <i class="fas fa-edit"></i> Редактировать
+                </button>
+                {% elif existing_chat %}
+                <button onclick="window.location.href='{{ url_for('chat', user_id=user.id) }}'"
+                        style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                    <i class="fas fa-comment"></i> Написать
+                </button>
+                {% else %}
+                <button onclick="window.location.href='{{ url_for('chat', user_id=user.id) }}'"
+                        style="padding: 12px 25px; background: #00a884; border: none; border-radius: 8px; color: #fff; cursor: pointer;">
+                    <i class="fas fa-comment"></i> Начать чат
+                </button>
+                {% endif %}
             </div>
         </div>
-
-        {% if current_user.id == user.id %}
-        <button class="btn btn-primary" onclick="window.location.href='/edit_profile'">
-            <i class="fas fa-edit"></i> Редактировать профиль
-        </button>
+    </div>
+    
+    <!-- Подарки пользователя -->
+    <div style="background: #1f2c34; border-radius: 15px; padding: 30px;">
+        <h2 style="margin-bottom: 20px;">🎁 Подарки</h2>
+        {% if user_gifts %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            {% for gift in user_gifts %}
+            <div style="background: #2a3942; border-radius: 10px; padding: 15px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 10px;">{{ gift.gift.emoji }}</div>
+                <h3 style="margin-bottom: 5px;">{{ gift.gift.name }}</h3>
+                <p style="color: #8696a0; font-size: 12px;">от {{ gift.sender.username }}</p>
+                {% if gift.message %}
+                <p style="font-size: 13px; margin-top: 10px;">"{{ gift.message }}"</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
-        <button class="btn btn-primary" onclick="window.location.href='/chat/{{ user.id }}'">
-            <i class="fas fa-comment"></i> Написать сообщение
-        </button>
+        <p style="color: #8696a0; text-align: center;">У пользователя пока нет подарков</p>
         {% endif %}
     </div>
 </div>
