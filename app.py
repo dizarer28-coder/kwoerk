@@ -15,13 +15,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads/avatars'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# Создаем папки для загрузок
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs('static/uploads/channels', exist_ok=True)
 
+# Инициализация расширений
 db.init_app(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# СОЗДАЕМ ТАБЛИЦЫ ПРЯМО СЕЙЧАС!
+with app.app_context():
+    db.create_all()
+    print("✅ Таблицы базы данных созданы!")
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -166,10 +173,36 @@ def edit_profile():
 @app.route('/test')
 def test():
     try:
-        result = db.session.execute('SELECT 1').scalar()
-        return f"✅ База данных работает! Результат теста: {result}"
+        # Проверяем создание таблиц
+        with app.app_context():
+            db.create_all()
+        
+        # Проверяем запрос к базе
+        result = db.session.execute('SELECT name FROM sqlite_master WHERE type="table"').fetchall()
+        tables = [row[0] for row in result]
+        
+        # Проверяем тестового пользователя
+        test_user = User.query.filter_by(phone='79123456789').first()
+        if not test_user:
+            test_user = User(
+                phone='79123456789',
+                username='test',
+                email='test@test.com'
+            )
+            test_user.set_password('123456')
+            db.session.add(test_user)
+            db.session.commit()
+            test_user = User.query.filter_by(phone='79123456789').first()
+        
+        return f"""
+        ✅ База данных работает!<br>
+        Таблицы: {tables}<br>
+        Тестовый пользователь: {test_user.username if test_user else 'Не создан'}<br>
+        Телефон: 79123456789<br>
+        Пароль: 123456
+        """
     except Exception as e:
-        return f"❌ Ошибка базы данных: {str(e)}"
+        return f"❌ Ошибка: {str(e)}"
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -180,6 +213,7 @@ if __name__ == '__main__':
         db.create_all()
         print("✅ База данных создана!")
         
+        # Создаем тестового пользователя если нет
         if User.query.count() == 0:
             test_user = User(
                 phone='79123456789',
