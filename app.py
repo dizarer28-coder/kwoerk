@@ -181,25 +181,20 @@ def test():
         result = db.session.execute('SELECT name FROM sqlite_master WHERE type="table"').fetchall()
         tables = [row[0] for row in result]
         
-        # Проверяем тестового пользователя
-        test_user = User.query.filter_by(phone='79123456789').first()
-        if not test_user:
-            test_user = User(
-                phone='79123456789',
-                username='test',
-                email='test@test.com'
-            )
-            test_user.set_password('123456')
-            db.session.add(test_user)
-            db.session.commit()
-            test_user = User.query.filter_by(phone='79123456789').first()
+        # Получаем всех пользователей
+        users = User.query.all()
+        users_info = "<br>".join([f"👤 {u.username}: тел: {u.phone}" for u in users])
         
         return f"""
         ✅ База данных работает!<br>
         Таблицы: {tables}<br>
-        Тестовый пользователь: {test_user.username if test_user else 'Не создан'}<br>
-        Телефон: 79123456789<br>
-        Пароль: 123456
+        <br>
+        <b>Пользователи в базе:</b><br>
+        {users_info if users else 'Нет пользователей'}<br>
+        <br>
+        <b>Тестовые аккаунты:</b><br>
+        📱 Телефон: 79123456789, пароль: 123456, имя: test<br>
+        📱 Телефон: 11213141516, пароль: 123456789, имя: user2<br>
         """
     except Exception as e:
         return f"❌ Ошибка: {str(e)}"
@@ -213,17 +208,32 @@ if __name__ == '__main__':
         db.create_all()
         print("✅ База данных создана!")
         
-        # Создаем тестового пользователя если нет
+        # Создаем тестовых пользователей если их нет
         if User.query.count() == 0:
-            test_user = User(
+            # Первый тестовый пользователь
+            user1 = User(
                 phone='79123456789',
                 username='test',
                 email='test@test.com'
             )
-            test_user.set_password('123456')
-            db.session.add(test_user)
+            user1.set_password('123456')
+            db.session.add(user1)
+            
+            # Второй тестовый пользователь
+            user2 = User(
+                phone='11213141516',
+                username='user2',
+                email='user2@test.com'
+            )
+            user2.set_password('123456789')
+            db.session.add(user2)
+            
             db.session.commit()
-            print("✅ Тестовый пользователь создан: тел: 79123456789, пароль: 123456")
+            print("✅ Созданы тестовые пользователи:")
+            print("   - Телефон: 79123456789, пароль: 123456, имя: test")
+            print("   - Телефон: 11213141516, пароль: 123456789, имя: user2")
+        else:
+            print(f"✅ Пользователи уже существуют. Всего: {User.query.count()}")
     
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, debug=False, host='0.0.0.0', port=port)
