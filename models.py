@@ -6,13 +6,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'user'
+    
     id = db.Column(db.Integer, primary_key=True)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     password_hash = db.Column(db.String(200), nullable=False)
     avatar = db.Column(db.String(200), default='default.jpg')
     bio = db.Column(db.String(500), default='')
-    phone = db.Column(db.String(20), default='')
     online = db.Column(db.Boolean, default=False)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -28,6 +30,8 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Channel(db.Model):
+    __tablename__ = 'channel'
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500))
@@ -40,6 +44,8 @@ class Channel(db.Model):
     subscribers = db.relationship('ChannelSubscriber', backref='channel', lazy=True)
 
 class ChannelSubscriber(db.Model):
+    __tablename__ = 'channel_subscriber'
+    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
@@ -47,6 +53,8 @@ class ChannelSubscriber(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
 
 class Message(db.Model):
+    __tablename__ = 'message'
+    
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -56,6 +64,8 @@ class Message(db.Model):
     file_url = db.Column(db.String(200))
 
 class ChannelMessage(db.Model):
+    __tablename__ = 'channel_message'
+    
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)

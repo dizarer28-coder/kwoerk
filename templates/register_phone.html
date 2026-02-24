@@ -1,115 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация по номеру телефона</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: #0b141a;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: #1f2c34;
-            padding: 40px;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 400px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #00a884;
-        }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: #2a3942;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-        }
-        input::placeholder {
-            color: #8696a0;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: #00a884;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #008f72;
-        }
-        .phone-input {
-            display: flex;
-            gap: 10px;
-        }
-        .phone-code {
-            width: 30%;
-        }
-        .phone-number {
-            width: 70%;
-        }
-        .link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .link a {
-            color: #00a884;
-            text-decoration: none;
-        }
-        .error {
-            background: #ff4757;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Регистрация</h1>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="error">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <form method="POST">
-            <div class="phone-input">
-                <input type="text" class="phone-code" name="phone_code" placeholder="+7" value="+7" readonly>
-                <input type="text" class="phone-number" name="phone" placeholder="9123456789" required>
-            </div>
-            <input type="text" name="username" placeholder="Имя пользователя" required>
-            <input type="email" name="email" placeholder="Email (необязательно)">
-            <input type="password" name="password" placeholder="Пароль" required>
-            <button type="submit">Зарегистрироваться</button>
-        </form>
-        
-        <div class="link">
-            Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
+{% extends "base.html" %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto; background: #1f2c34; padding: 40px; border-radius: 15px;">
+    <h1 style="text-align: center; color: #00a884; margin-bottom: 30px;">Регистрация</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="background: #ff4757; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" value="+7" readonly style="width: 30%; padding: 15px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
+            <input type="text" name="phone" placeholder="9123456789" required style="width: 70%; padding: 15px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
         </div>
-    </div>
-</body>
-</html>
+        <input type="text" name="username" placeholder="Имя пользователя" required style="width: 100%; padding: 15px; margin-bottom: 20px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
+        <input type="email" name="email" placeholder="Email (необязательно)" style="width: 100%; padding: 15px; margin-bottom: 20px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
+        <input type="password" name="password" placeholder="Пароль" required style="width: 100%; padding: 15px; margin-bottom: 20px; background: #2a3942; border: none; border-radius: 8px; color: #fff;">
+        <button type="submit" style="width: 100%; padding: 15px; background: #00a884; border: none; border-radius: 8px; color: #fff; font-size: 18px; cursor: pointer;">Зарегистрироваться</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px; color: #8696a0;">
+        Уже есть аккаунт? <a href="{{ url_for('login') }}" style="color: #00a884; text-decoration: none;">Войти</a>
+    </p>
+</div>
+{% endblock %}
