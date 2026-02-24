@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, session, send_from_directory
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
@@ -8,7 +8,7 @@ import os
 import uuid
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret-key-change-this')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///telegram.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads/avatars'
@@ -33,8 +33,6 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('chats'))
     return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -431,15 +429,28 @@ def search_users():
         'online': user.online
     } for user in users])
 
+@app.route('/test')
+def test():
+    try:
+        # Проверка базы данных
+        test_user = User.query.first()
+        if test_user:
+            return f"База данных работает! Найден пользователь: {test_user.username}"
+        else:
+            return "База данных работает, но пользователей пока нет"
+    except Exception as e:
+        return f"Ошибка базы данных: {str(e)}"
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         
+        # Создание тестовых пользователей если их нет
         if User.query.count() == 0:
             users_data = [
                 {'username': 'alice', 'email': 'alice@test.com', 'password': '123456', 'bio': 'Дизайнер, люблю рисовать'},
                 {'username': 'bob', 'email': 'bob@test.com', 'password': '123456', 'bio': 'Разработчик игр'},
-                {'username': 'charlie', 'email': 'charlie@test.com', 'password': '123456', 'bio': 'Музыкант'}
+                {'username': 'charlie', 'email': 'charlie@test.com', 'password': '123456', 'bio': 'Музыкант'},
             ]
             
             for user_data in users_data:
